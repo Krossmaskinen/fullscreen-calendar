@@ -1,6 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
+	import { writable } from 'svelte/store';
 	import { getMonthData, getPrevMonth, getNextMonth } from '../helpers/helpers';
+
 	let date = new Date();
 	let monthData;
 	let selectedDay;
@@ -12,6 +14,12 @@
 	let eventEnd = '';
 	let eventDescription = '';
 	let eventName = '';
+
+	const calendarStore = writable(JSON.parse(localStorage.getItem('calendarStore')) || {});
+
+	calendarStore.subscribe((value) => {
+		localStorage.setItem('calendarStore', JSON.stringify(value));
+	});
 
 	const selectDay = (day) => {
 		selectedDay = day;
@@ -36,13 +44,26 @@
 	};
 
 	const saveEvent = () => {
-		selectedDay.event = {
-			title: eventTitle,
-			start: eventStart,
-			end: eventEnd,
-			description: eventDescription,
-			name: eventName
-		};
+		calendarStore.update((store) => {
+			const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+			if (!store[monthKey]) {
+				store[monthKey] = {};
+			}
+
+			const dayKey = `${selectedDay.date.getDate()}`;
+			if (!store[monthKey][dayKey]) {
+				store[monthKey][dayKey] = { events: [] };
+			}
+
+			store[monthKey][dayKey].events.push({
+				title: eventTitle,
+				start: eventStart,
+				end: eventEnd,
+				description: eventDescription,
+				name: eventName
+			});
+			return store;
+		});
 		closeAddEvent();
 	};
 
@@ -61,13 +82,15 @@
 		<button on:click={goBack} class="mb-4 bg-blue-500 text-white px-4 py-2 rounded">Back</button>
 		<h2 class="text-2xl mb-4">{selectedDay.date.toDateString()}</h2>
 		<p>{selectedDay.details}</p>
-		{#if selectedDay.event}
-			<div class="mt-4">
-				<h3 class="text-xl mb-2">{selectedDay.event.title}</h3>
-				<p>{selectedDay.event.start} - {selectedDay.event.end}</p>
-				<p>{selectedDay.event.description}</p>
-				<p>{selectedDay.event.name}</p>
-			</div>
+		{#if $calendarStore[`${date.getFullYear()}-${date.getMonth()}`] && $calendarStore[`${date.getFullYear()}-${date.getMonth()}`][`${selectedDay.date.getDate()}`]}
+			{#each $calendarStore[`${date.getFullYear()}-${date.getMonth()}`][`${selectedDay.date.getDate()}`].events as event}
+				<div class="mt-4">
+					<h3 class="text-xl mb-2">{event.title}</h3>
+					<p>{event.start} - {event.end}</p>
+					<p>{event.description}</p>
+					<p>{event.name}</p>
+				</div>
+			{/each}
 		{/if}
 		<button on:click={openAddEvent} class="mt-4 bg-green-500 text-white px-4 py-2 rounded"
 			>Add Event</button
@@ -132,11 +155,13 @@
 				<div on:click={() => selectDay(day)} class="border p-4 rounded cursor-pointer">
 					<h3 class="text-xl">{day.date.getDate()}</h3>
 					<p>{day.details}</p>
-					{#if day.event}
-						<div class="mt-2">
-							<h4 class="text-lg">{day.event.title}</h4>
-							<p>{day.event.start} - {day.event.end}</p>
-						</div>
+					{#if $calendarStore[`${date.getFullYear()}-${date.getMonth()}`] && $calendarStore[`${date.getFullYear()}-${date.getMonth()}`][`${day.date.getDate()}`]}
+						{#each $calendarStore[`${date.getFullYear()}-${date.getMonth()}`][`${day.date.getDate()}`].events as event}
+							<div class="mt-2">
+								<h4 class="text-lg">{event.title}</h4>
+								<p>{event.start} - {event.end}</p>
+							</div>
+						{/each}
 					{/if}
 				</div>
 			{/each}
