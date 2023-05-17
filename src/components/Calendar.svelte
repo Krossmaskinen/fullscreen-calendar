@@ -57,50 +57,84 @@
 </script>
 
 {#if showDayDetails}
-	<div class="full-screen">
-		<button on:click={goBack}>Back</button>
-		<h2>Selected day: {selectedDay.date.toDateString()}</h2>
+	<div class="fixed inset-0 bg-white flex flex-col items-center justify-center p-8">
+		<button on:click={goBack} class="mb-4 bg-blue-500 text-white px-4 py-2 rounded">Back</button>
+		<h2 class="text-2xl mb-4">{selectedDay.date.toDateString()}</h2>
 		<p>{selectedDay.details}</p>
 		{#if selectedDay.event}
-			<div>
-				<h3>{selectedDay.event.title}</h3>
+			<div class="mt-4">
+				<h3 class="text-xl mb-2">{selectedDay.event.title}</h3>
 				<p>{selectedDay.event.start} - {selectedDay.event.end}</p>
 				<p>{selectedDay.event.description}</p>
 				<p>{selectedDay.event.name}</p>
 			</div>
 		{/if}
-		<button on:click={openAddEvent}>Add Event</button>
+		<button on:click={openAddEvent} class="mt-4 bg-green-500 text-white px-4 py-2 rounded"
+			>Add Event</button
+		>
 		{#if showAddEvent}
-			<div class="dialog">
-				<h3>Add Event</h3>
-				<input bind:value={eventTitle} placeholder="Title" />
-				<input type="time" bind:value={eventStart} placeholder="Start Time" />
-				<input type="time" bind:value={eventEnd} placeholder="End Time" />
-				<textarea bind:value={eventDescription} placeholder="Description" />
-				<input bind:value={eventName} placeholder="Name (Optional)" />
-				<button on:click={closeAddEvent}>Close</button>
-				<button on:click={saveEvent}>Save</button>
+			<div class="absolute bg-white shadow-lg rounded p-4 m-4">
+				<h3 class="text-xl mb-4">Add Event</h3>
+				<input bind:value={eventTitle} placeholder="Title" class="border p-2 rounded mb-2 w-full" />
+				<input
+					type="time"
+					bind:value={eventStart}
+					placeholder="Start Time"
+					class="border p-2 rounded mb-2 w-full"
+				/>
+				<input
+					type="time"
+					bind:value={eventEnd}
+					placeholder="End Time"
+					class="border p-2 rounded mb-2 w-full"
+				/>
+				<textarea
+					bind:value={eventDescription}
+					placeholder="Description"
+					class="border p-2 rounded mb-2 w-full"
+				/>
+				<input
+					bind:value={eventName}
+					placeholder="Name (Optional)"
+					class="border p-2 rounded mb-2 w-full"
+				/>
+				<div class="flex justify-end">
+					<button on:click={closeAddEvent} class="mr-2 bg-red-500 text-white px-4 py-2 rounded"
+						>Close</button
+					>
+					<button on:click={saveEvent} class="bg-blue-500 text-white px-4 py-2 rounded">Save</button
+					>
+				</div>
 			</div>
 		{/if}
 	</div>
 {:else}
-	<div>
-		<button on:click={() => updateMonth(getPrevMonth(date))}>Previous</button>
-		<button on:click={() => updateMonth(getNextMonth(date))}>Next</button>
+	<div class="flex justify-between p-4">
+		<button
+			on:click={() => updateMonth(getPrevMonth(date))}
+			class="bg-blue-500 text-white px-4 py-2 rounded">Previous</button
+		>
+		<button
+			on:click={() => updateMonth(getNextMonth(date))}
+			class="bg-blue-500 text-white px-4 py-2 rounded">Next</button
+		>
 	</div>
 
-	<h2>{date.toLocaleString('default', { month: 'long' })} {date.getFullYear()}</h2>
+	<h2 class="text-2xl text-center mb-4">
+		{date.toLocaleString('default', { month: 'long' })}
+		{date.getFullYear()}
+	</h2>
 
 	{#if monthData}
-		<div class="calendar">
+		<div class="grid grid-cols-7 gap-4 p-4">
 			{#each monthData as day, index (index)}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<div class="day" on:click={() => selectDay(day)}>
-					<h3>{day.date.getDate()}</h3>
+				<div on:click={() => selectDay(day)} class="border p-4 rounded cursor-pointer">
+					<h3 class="text-xl">{day.date.getDate()}</h3>
 					<p>{day.details}</p>
 					{#if day.event}
-						<div>
-							<h4>{day.event.title}</h4>
+						<div class="mt-2">
+							<h4 class="text-lg">{day.event.title}</h4>
 							<p>{day.event.start} - {day.event.end}</p>
 						</div>
 					{/if}
@@ -109,33 +143,3 @@
 		</div>
 	{/if}
 {/if}
-
-<style>
-	/* Add your styles here */
-	.calendar {
-		display: grid;
-		grid-template-columns: repeat(7, 1fr);
-	}
-	.day {
-		cursor: pointer;
-	}
-	.full-screen {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: white;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-	}
-	.dialog {
-		position: absolute;
-		width: 300px;
-		padding: 20px;
-		background: white;
-		border: 1px solid #ccc;
-	}
-</style>

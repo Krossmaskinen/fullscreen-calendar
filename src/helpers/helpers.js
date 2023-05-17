@@ -6,7 +6,7 @@ export function getMonthData(date) {
 	for (let d = monthStart; d <= monthEnd; d.setDate(d.getDate() + 1)) {
 		monthData.push({
 			date: new Date(d),
-			details: `Details for ${d.toDateString()}` // Replace this with real data
+			details: '' // Replace this with real data
 		});
 	}
 
